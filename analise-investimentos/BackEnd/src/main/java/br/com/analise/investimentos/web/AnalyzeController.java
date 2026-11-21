@@ -3,13 +3,11 @@ package br.com.analise.investimentos.web;
 import br.com.analise.investimentos.rules.Resultado;
 import br.com.analise.investimentos.service.AnalyzeService;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/analyze")
-@CrossOrigin(origins = "*")
 public class AnalyzeController {
 
     private final AnalyzeService analyzeService;
