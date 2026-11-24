@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: analise-investimentos-arko-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./analise-investimentos/BackEnd/Dockerfile
+    dockerContext: ./analise-investimentos/BackEnd
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: APP_CORS_ALLOWED_ORIGINS
+        value: https://analise-investimentos-arko.vercel.app
+      - key: DATABRICKS_HOST
+        sync: false
+      - key: DATABRICKS_TOKEN
+        sync: false
+      - key: DATABRICKS_WAREHOUSE_ID
+        sync: false
