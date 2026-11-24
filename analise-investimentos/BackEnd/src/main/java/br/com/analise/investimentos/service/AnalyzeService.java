@@ -2,6 +2,7 @@
 package br.com.analise.investimentos.service;
 
 import br.com.analise.investimentos.data.EmissorRepository;
+import br.com.analise.investimentos.data.AtivoRepository;
 import br.com.analise.investimentos.data.ParametroRepository;
 import br.com.analise.investimentos.data.RegraRepository;
 import br.com.analise.investimentos.parser.TextParser;
@@ -23,6 +24,7 @@ public class AnalyzeService {
     private final TextParser textParser;
     private ExtracaoService extracaoService;
     private HistoricoService historicoService;
+    private AtivoRepository ativoRepository;
 
     public AnalyzeService(
             RegraRepository regraRepository,
@@ -44,13 +46,21 @@ public class AnalyzeService {
         this.historicoService = historicoService;
     }
 
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configurarAtivos(AtivoRepository ativoRepository) {
+        this.ativoRepository = ativoRepository;
+    }
+
     public Resultado analisar(String texto) {
         return executar(textParser.parse(texto));
     }
 
     public AnaliseDetalhada analisarDetalhado(String texto) {
         var extracao = extracaoService.extrair(texto);
-        Map<String, Object> dados = new java.util.LinkedHashMap<>(extracao.dados());
+        Map<String, Object> dados = new java.util.LinkedHashMap<>();
+        extracao.dados().forEach((chave, valor) -> {
+            if (valor != null) dados.put(chave, valor);
+        });
         Resultado resultado;
         boolean ativoEncontrado = false;
         List<Map<String, Object>> fundamentos = new ArrayList<>();
@@ -58,7 +68,38 @@ public class AnalyzeService {
         Double dividendYield12m = null;
         String mensagem;
         try {
-            ativoEncontrado = false;
+            if (ativoRepository != null) {
+                var ativo = ativoRepository.buscarAtivo(dados);
+                if (ativo.isPresent()) {
+                    ativoEncontrado = true;
+                    ativo.get().forEach((chave, valor) -> {
+                        if (valor != null) dados.putIfAbsent(chave, valor);
+                    });
+                    if (dados.get("classe") == null && ativo.get().get("classe") != null) {
+                        dados.put("classe", ativo.get().get("classe"));
+                    } else if (dados.containsKey("classe") && ativo.get().get("classe") != null) {
+                        dados.put("classe", ativo.get().get("classe"));
+                    }
+                }
+
+                if ("FUNDO_INVESTIMENTO".equals(dados.get("classe"))) {
+                    var fundo = ativoRepository.buscarFundo(dados);
+                    if (fundo.isPresent()) {
+                        ativoEncontrado = true;
+                        fundo.get().forEach((chave, valor) -> {
+                            if (valor != null) dados.putIfAbsent(chave, valor);
+                        });
+                    }
+                }
+
+                fundamentos = ativoRepository.buscarFundamentos(dados);
+                rentabilidade = ativoRepository.buscarRentabilidade(dados);
+                var serie = ativoRepository.buscarSerieGrafico(dados);
+                if (!serie.isEmpty()) rentabilidade = new ArrayList<>(serie);
+                if ("ACAO".equals(dados.get("classe")) || "FII".equals(dados.get("classe"))) {
+                    dividendYield12m = ativoRepository.buscarDividendYield(dados).orElse(null);
+                }
+            }
             resultado = executar(dados);
             mensagem = ativoEncontrado
                     ? "Análise concluída com dados consultados no Databricks."

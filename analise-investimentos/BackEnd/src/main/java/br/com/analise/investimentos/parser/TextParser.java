@@ -25,6 +25,10 @@ public class TextParser {
                 || normalizado.contains("lca")) {
             dados.put("classe", "RENDA_FIXA_BANCARIA");
         }
+        if (normalizado.contains("lci")) dados.put("tipo_ativo", "LCI");
+        else if (normalizado.contains("lca")) dados.put("tipo_ativo", "LCA");
+        else if (normalizado.contains("cdb")) dados.put("tipo_ativo", "CDB");
+        else if (normalizado.contains("rdb")) dados.put("tipo_ativo", "RDB");
 
         // Prioridade: FII antes de fundo, Tesouro antes de ação.
         if (normalizado.matches("(?s).*(?:\\bfii\\b|\\bfiis\\b|fundo imobiliario|fundos imobiliarios).*")) {
@@ -100,6 +104,18 @@ public class TextParser {
                 );
             }
         }
+
+        Matcher gestora = Pattern.compile(
+                "(?:gestora|gestado por)\\s*[:=-]?\\s*([A-Za-zÀ-ÿ0-9][A-Za-zÀ-ÿ0-9 .&-]+)",
+                Pattern.CASE_INSENSITIVE
+        ).matcher(texto);
+        if (gestora.find()) dados.put("gestora", gestora.group(1).trim());
+
+        Matcher classeFundo = Pattern.compile(
+                "(multimercado|renda fixa|acoes|ações|imobiliario|imobiliário|mix)",
+                Pattern.CASE_INSENSITIVE
+        ).matcher(normalizado);
+        if (classeFundo.find()) dados.put("classe_fundo", classeFundo.group(1).trim());
 
         // Vencimento
         Matcher vencimento = Pattern.compile(
