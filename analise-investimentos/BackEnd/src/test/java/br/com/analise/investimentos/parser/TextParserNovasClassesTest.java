@@ -26,4 +26,15 @@ class TextParserNovasClassesTest {
     @Test void preservaCdb() {
         assertEquals("RENDA_FIXA_BANCARIA", parser.parse("CDB Bradesco 100% CDI liquidez diaria").get("classe"));
     }
+    @Test void identificaCdbLciELca() {
+        assertEquals("CDB", parser.parse("CDB Banco Inter 110% CDI").get("tipo_ativo"));
+        assertEquals("LCI", parser.parse("LCI Itaú 95% CDI").get("tipo_ativo"));
+        assertEquals("LCA", parser.parse("LCA Bradesco IPCA+ 6%").get("tipo_ativo"));
+    }
+    @Test void identificaGestoraDeFundo() {
+        var dados = parser.parse("Fundo multimercado gestora XP Asset");
+        assertEquals("FUNDO_INVESTIMENTO", dados.get("classe"));
+        assertEquals("XP Asset", dados.get("gestora"));
+        assertEquals("multimercado", dados.get("classe_fundo"));
+    }
 }

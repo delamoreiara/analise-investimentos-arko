@@ -41,9 +41,9 @@ public class RuleEngine {
             // Uma regra só se aplica à classe para a qual foi cadastrada.
             // Evita aplicar regras bancárias a Tesouro, fundos, ações e FIIs.
             Object classeAtivo = dados.get("classe");
-            if (regra.classe() != null && !regra.classe().isBlank()
-                    && (classeAtivo != null && !regra.classe().equalsIgnoreCase(classeAtivo.toString()))) {
-                continue;
+            if (regra.classe() != null && !regra.classe().isBlank()) {
+                if (classeAtivo != null
+                        && !regra.classe().equalsIgnoreCase(classeAtivo.toString())) continue;
             }
 
 

@@ -14,7 +14,7 @@ import java.util.*;
 @Service
 public class ExtracaoService {
     private static final Logger log = LoggerFactory.getLogger(ExtracaoService.class);
-    private static final Set<String> CAMPOS = Set.of("classe", "tipo_ativo", "ticker", "emissor_nome", "emissor_porte", "percentual_cdi", "indexador", "liquidez_dias", "vencimento_ano");
+    private static final Set<String> CAMPOS = Set.of("classe", "tipo_ativo", "ticker", "emissor_nome", "emissor_porte", "percentual_cdi", "indexador", "liquidez_dias", "vencimento_ano", "gestora", "classe_fundo", "liquidez", "nome");
     private final TextParser parser;
     private final ObjectMapper mapper;
     private final boolean llmAtiva;
